@@ -26,8 +26,8 @@ pytest
 
 ## Run flask application
 
-Start application webserver. Sepcify <trade_data_files_dir>, <webserver hostname>, <webserver port> optionally or use default.
-Default values: <trade_data_files_dir> - <app_code_root_dir>/common, <webserver hostname> - localhost, <webserver port> - 8080.
+Start application webserver. Sepcify `<trade_data_files_dir>`, `<webserver hostname>` and `<webserver port>` optionally or use default.
+Default values: `<trade_data_files_dir>` - <i><app_code_root_dir>/common</i>, `<webserver hostname>` - <i>localhost</i>, `<webserver port>` - <i>8080</i>.
 
 ```bash
 source env/bin/activate
@@ -40,7 +40,7 @@ Note: app load all trading data into memory and process trade data on startup, t
 # Client API Documentation
 
 Although all client views render HTML, however, application supports Swagger Docs page for easier Client interface documentation. Open pages directly not via Swagger page to get best processed trade data view.
-Go to http://localhost:8080/apidocs/ for CLient API docs.
+Go to http://localhost:8080/apidocs/ for Client API docs.
 
 
 # Task description
