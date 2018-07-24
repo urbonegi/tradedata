@@ -5,25 +5,37 @@ from enum import Enum
 import pandas as pd
 from utils import get_csv_files, is_none_decorator
 
-
 TRADE_COLUMN_CONFIG = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../trade_data_conf.json')
-with open(TRADE_COLUMN_CONFIG, 'r') as f:
-    trade_col_data = json.load(f)
-    INITIAL_COLUMNS = sorted(trade_col_data, key=trade_col_data.__getitem__)
 
 
-class TradeDataColumns(Enum):
-    # For data reprentation
-    market_val = 1
-    instr_market_val = 2
-    instr_closing_val = 3
-    instr_average_price = 4
+def setup_columns(data_column_config=TRADE_COLUMN_CONFIG):
+    """
+    Allow to change client-provided data column order
+    by defining the order in config
+    """
+    with open(data_column_config, 'r') as f:
+        trade_col_data = json.load(f)
+        INITIAL_COLUMNS = sorted(trade_col_data, key=trade_col_data.__getitem__)
 
-names = INITIAL_COLUMNS + [m.name for m in TradeDataColumns]
-TradeDataColumns = Enum('TradeDataColumns', names)
+    class TradeDataColumns(Enum):
+        # For data reprentation
+        market_val = 1
+        instr_market_val = 2
+        instr_closing_val = 3
+        instr_average_price = 4
+
+    names = INITIAL_COLUMNS + [m.name for m in TradeDataColumns]
+    TradeDataColumns = Enum('TradeDataColumns', names)
+    return INITIAL_COLUMNS, TradeDataColumns
+
+
+INITIAL_COLUMNS, TradeDataColumns = setup_columns()
 
 
 class TradePanda(object):
+    """
+    Class to work with panda dataframe
+    """
     def __init__(self, trade_df):
         self.df = trade_df
         self._clean()
@@ -31,6 +43,9 @@ class TradePanda(object):
         self._add_additional_attributes()
 
     def _add_additional_attributes(self):
+        """
+        Process data and st additional class attributes for later use
+        """
         self.trade_days = self.df[TradeDataColumns.date.name].unique()
         # Daily df
         self.daily_df = self.df.groupby(TradeDataColumns.date.name).agg({TradeDataColumns.market_val.name: ['sum', 'count']})
@@ -41,6 +56,9 @@ class TradePanda(object):
         self.instrument_df = pd.DataFrame({'instrument_daily_market_val' : instr_markt_val}).reset_index()
 
     def _clean(self):
+        """
+        Clean the pandas dataframe
+        """
         self.df.drop_duplicates()
         self.df = self.df.reset_index(drop=True)
         self.df[TradeDataColumns.date.name] = self.df[TradeDataColumns.date.name].apply(str)
@@ -49,6 +67,9 @@ class TradePanda(object):
         self.df[TradeDataColumns.price.name] = self.df[TradeDataColumns.price.name].apply(float)
 
     def _add_additional_data_col(self):
+        """
+        Add new columns to main pandas dataframe
+        """
         self.df[TradeDataColumns.market_val.name] = self.df.apply(self.get_market_value, axis=1)
         self.df[[TradeDataColumns.instr_closing_val.name, TradeDataColumns.instr_average_price.name]] = \
             self.df.apply(self.get_closing_value_average_price, axis=1, result_type="expand")
@@ -88,14 +109,16 @@ class TradesData(object):
         """
         Using Singleton pattern to share loaded dataframe in the app
         """
-        print('In new')
         if not cls._instance:
-            print('Assigning new instance')
             instance = super(TradesData, cls).__new__(cls, *args, **kwargs)
             cls._instance = instance
         return cls._instance
 
     def process_trade_data(self, dir):
+        """
+        Process client-provided CSV datafiles and load
+        final trade dataframe
+        """
         pd_dfs = []
         csv_files = get_csv_files(dir)
         for file in csv_files:
@@ -132,4 +155,7 @@ class TradesData(object):
 
     @is_none_decorator('trades')
     def get_daily_summary(self):
+        """
+        Controller to get daily trade stats dataframe
+        """
         return self.trades.daily_df

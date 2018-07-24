@@ -16,40 +16,32 @@ source env/bin/activate
 pip install -r requirements.txt
 ```
 
-## Run flask application
-
-After sourcing application virtual environment, run app webserver. Sepcify <trade_data_files_dir>, <webserver hostname>, <webserver port> optionally or use default. Default values: <trade_data_files_dir> - <app_code_root_dir>/common, <webserver hostname> - 127.0.0.1, <webserver port> - 5000.
+## Run tests
 
 ```bash
+source env/bin/activate
+cd <app_code_root_dir>
+pytest
+```
+
+## Run flask application
+
+Start application webserver. Sepcify <trade_data_files_dir>, <webserver hostname>, <webserver port> optionally or use default.
+Default values: <trade_data_files_dir> - <app_code_root_dir>/common, <webserver hostname> - localhost, <webserver port> - 8080.
+
+```bash
+source env/bin/activate
 cd <app_code_root_dir>
 python trade_app_run.py --dir <trade_data_files_dir> --host <webserver hostname> --port <webserver port>
 ```
 
-Note: app load all trading data into memory and process trade data on startup, therefore starting might take couple of seconds depending on data size and gear.
-
-## Run tests
-
-TBC
+Note: app load all trading data into memory and process trade data on startup, therefore starting might take couple of seconds depending on data files size and gear.
 
 # Client API Documentation
 
-## Get all trades data
+Although all client views render HTML, however, application supports Swagger Docs page for easier Client interface documentation. Open pages directly not via Swagger page to get best processed trade data view.
+Go to http://localhost:8080/apidocs/ for CLient API docs.
 
-## Filter trades by trade_reference
-
-## Export all trades to .csv file
-
-## Get Instrument daily Statistics
-
-## Filter Instrument daily Statistrics by date or by instrument
-
-## Export all instrument statistics to .csv file
-
-## Get Daily Market Statistics
-
-## Export aily Market Statistics to .csv file
-
-## Filter Total Trading Statistrics by date
 
 # Task description
 
@@ -63,13 +55,13 @@ Assume we need to store the trades somewhere for further processing as well prov
  
 # Assumptions
 
-+ Data loaded on application startup and pandas dataframe initialized. The same dataframe objects instance is used for application lifetime. In case new data needs to be uploaded application should be restarted with dir path to a trade data dir.
-+ Trade data can consist multiple day trades and multiple client data. Trade data is in CSV format without column titles. Trading data files have '.csv' file ending. Child directories, if there are any, with .csv files they are ignored.
-+ The data columns order is as follows (order can be changed by changing enumeration in trade_data_conf.json; also new client data columns can be defined there.):
++ Data loaded on application startup and pandas dataframe initialized. The same dataframe objects instance is used for application lifetime. In case new data needs to be uploaded application should be restarted with dir path to a trade data dir. Although if later required upload of data can be supported without need to restart app.
++ Trade data can consist multiple day trades and multiple client data. Trade data is in CSV format without column titles. Trading data files have '.csv' file ending. Child directories, if there are any, with .csv files are ignored.
++ The data columns order is as follows (order can be changed by changing enumeration in trade_data_conf.json; also new client data columns can be defined there):
     - Mandatory data columns:
         - instrument (any string),
-        - date (date in format: yyyymmdd, i.e. 20110623),
-        - time_in_milsec (time in miliseconds, integer, i.e. 37200003),
+        - date (date in format: yyyymmdd, i.e. 20110623, used as string),
+        - time_in_milsec (trade time in miliseconds, integer, i.e. 37200003),
         - quantity (traded quantity, interger),
         - price (instrument price, float);
     - Optional data columns:
